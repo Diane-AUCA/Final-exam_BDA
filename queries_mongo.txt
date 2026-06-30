@@ -1,0 +1,55 @@
+// Top Selling Products
+
+db.transactions.aggregate([
+  { $unwind: "$items" },
+
+  {
+    $group: {
+      _id: "$items.product_id",
+      total_quantity: { $sum: "$items.quantity" },
+      total_revenue: { $sum: "$items.subtotal" }
+    }
+  },
+
+  { $sort: { total_quantity: -1 } },
+
+  { $limit: 10 }
+])
+
+// Revenue by Category
+
+
+db.transactions.aggregate([{$unwind:"$items"},{$lookup:{from:"products",localField:"items.product_id",foreignField:"_id",as:"product"}},{$unwind:"$product"},{$group:{_id:"$product.category.name",revenue:{$sum:"$items.subtotal"},orders:{$sum:1},units:{$sum:"$items.quantity"}}},{$sort:{revenue:-1}},{$limit:10}])
+// Customer Segmentation
+
+db.transactions.aggregate([
+  {
+    $group: {
+      _id: "$user_id",
+      total_spent: { $sum: "$total" },
+      orders: { $sum: 1 }
+    }
+  },
+
+  {
+    $addFields: {
+      segment: {
+        $switch: {
+          branches: [
+            {
+              case: { $gte: ["$total_spent", 1000] },
+              then: "High Value"
+            },
+            {
+              case: { $gte: ["$total_spent", 500] },
+              then: "Medium Value"
+            }
+          ],
+          default: "Low Value"
+        }
+      }
+    }
+  },
+
+  { $sort: { total_spent: -1 } }
+])

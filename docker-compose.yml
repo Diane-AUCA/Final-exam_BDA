@@ -1,0 +1,29 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+    volumes:
+      - mongo-data:/data/db
+
+  hbase:
+    image: harisekhon/hbase:latest
+    container_name: hbase
+    restart: unless-stopped
+    ports:
+      - "16010:16010"   # HBase Web UI
+      - "9090:9090"     # Thrift server
+      - "2181:2181"     # Zookeeper
+      - "16000:16000"   # HMaster
+      - "16020:16020"   # RegionServer
+    volumes:
+      - hbase-data:/hbase-data
+
+volumes:
+  mongo-data:
+  hbase-data:
